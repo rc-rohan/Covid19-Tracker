@@ -9,6 +9,9 @@ import {
 import "./App.css";
 import InfoBox from "./Components/InfoBox";
 import Map from "./Components/Map";
+import Table from "./Components/Table";
+import LineGraph from './Components/LineGraph'
+import {sortData} from './util'
 
 function App() {
   // all country data
@@ -17,6 +20,8 @@ function App() {
   const [countrySelected, setCountrySelected] = useState("worldwide");
   // indivisual country info
   const [countryInfo, setCountryInfo] = useState({});
+
+  const [tableData, setTableData] = useState([]);
 
   useEffect(() => {
     fetch("https://disease.sh/v3/covid-19/all")
@@ -29,11 +34,14 @@ function App() {
       await fetch(" https://disease.sh/v3/covid-19/countries")
         .then((response) => response.json())
         .then((data) => {
-          const countries = data.map((country) => ({
-            name: country.country, //name of the country
-            value: country.countryInfo.iso2, //short code of the country
+          const countries = data.map(({ country, countryInfo }) => ({
+            name: country, //name of the country
+            value: countryInfo.iso2, //short code of the country
           }));
 
+          const sortedData = sortData(data);
+
+          setTableData(sortedData);
           setCountries(countries);
         });
     };
@@ -94,7 +102,7 @@ function App() {
           <InfoBox
             title="Deaths"
             cases={countryInfo.todayDeaths}
-            total={112121212}
+            total={countryInfo.deaths}
           />
         </div>
 
@@ -103,8 +111,10 @@ function App() {
       <Card className="app__right">
         <CardContent>
           <h3>Live Cases By Country</h3>
+          <Table countries={tableData} />
 
           <h3>Worldwide new cases</h3>
+          <LineGraph/>
         </CardContent>
       </Card>
     </div>
